@@ -1,0 +1,7 @@
+BIDDER_ADDRESS="Public key 2"
+RECIPIENT_ADDRESS="Public key 3"
+PRIVATE_KEY="Private key of owner without 0x"
+PRIVATE_KEY_BIDDER="Private key of BIDDER_ADDRESS without 0x"
+RPC_ENDPOINT="https://rpc-mainnet.maticvigil.com/"
+CHAIN_ID=137
+CURRENCY="Your ERC20 Token Address"

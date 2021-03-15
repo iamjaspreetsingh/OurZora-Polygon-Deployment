@@ -1,0 +1,61 @@
+import fs from 'fs-extra';
+import { JsonRpcProvider } from '@ethersproject/providers';
+import { Wallet } from '@ethersproject/wallet';
+import { MediaFactory } from '../typechain/MediaFactory';
+import { MarketFactory } from '../typechain/MarketFactory';
+import Decimal from '../utils/Decimal';
+import { BigNumber } from 'ethers';
+import { Address, BN } from 'ethereumjs-util';
+require('dotenv').config();
+
+
+async function start() {
+  const args = require('minimist')(process.argv.slice(2));
+
+  if (!args.tokenId) {
+    throw new Error('--tokenId tokenId is required');
+  }
+  if (!args.amount) {
+    throw new Error('--amount amount is required');
+  }
+  if (!args.sellOnShare) {
+    throw new Error('--sellOnShare sellOnShare% is required');
+  }
+
+  const provider = new JsonRpcProvider(process.env.RPC_ENDPOINT);
+
+  const wallet = new Wallet(`0x${process.env.PRIVATE_KEY_BIDDER}`, provider);
+  
+  const sharedAddressPath = `${process.cwd()}/addresses/${process.env.CHAIN_ID}.json`;
+  // @ts-ignore
+  const addressBook = JSON.parse(await fs.readFileSync(sharedAddressPath));
+
+  console.log('Transacting...');
+  const market = MarketFactory.connect(addressBook.market, wallet);
+  const media = MediaFactory.connect(addressBook.media, wallet);
+  var name=await media.name();
+  var symbol=await media.symbol();
+  console.log(name);
+  console.log(symbol);
+  
+  let Bid= {
+    amount:args.amount,
+    currency:process.env.CURRENCY,
+    bidder:process.env.BIDDER_ADDRESS,
+    recipient:process.env.BIDDER_ADDRESS,
+    sellOnShare:Decimal.new(args.sellOnShare),
+  };
+
+    // console.log(Decimal.new(10))
+    
+    await media.setBid(args.tokenId,Bid);
+    let owner=await media.ownerOf(args.tokenId);
+    console.log("Owner:" +owner);
+  
+}
+
+start().catch((e: Error) => {
+  console.error(e);
+  process.exit(1);
+});
+
